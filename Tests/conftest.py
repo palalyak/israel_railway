@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Generator, List
+from typing import Generator
 import pytest
 from playwright.sync_api import (
     Browser,
@@ -35,14 +35,14 @@ def browser_type(
 def browser(
     browser_type: BrowserType
 ) -> Generator[Browser, None, None]:
-    browser = browser_type.launch(headless=False)
+    browser = browser_type.launch(headless=False, slow_mo=1000)
     browser.new_context(
         permissions=['notifications'],
     )
     yield browser
     browser.close()
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def context(browser: Browser) -> Generator[BrowserContext, None, None]:
     context = browser.new_context(permissions=['geolocation'],
                                   geolocation={'longitude': 12.492507, 'latitude': 41.889938},
@@ -50,8 +50,7 @@ def context(browser: Browser) -> Generator[BrowserContext, None, None]:
     context.tracing.start()
     yield context
 
-
-@pytest.fixture
+@pytest.fixture(scope="session")
 def page(context: BrowserContext) -> Generator[Page, None, None]:
     page = context.new_page()
     yield page

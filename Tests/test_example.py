@@ -1,8 +1,34 @@
 import pytest
-from playwright.sync_api import Page
 from API.RailAPIClient import RailAPIClient
 from Pages.travel_page import TravelPage
 
+@pytest.fixture(scope="class")
+def get_train_data(request):
+    request.cls.train_data = train_data
+    yield
+
+
+@pytest.fixture(scope="class")
+def setup_travel_page(page, request):
+    travel_page = TravelPage(page)
+    train_details = train_data["train_details"]
+    travel_page.goto(train_details)
+    request.cls.travel_page = travel_page
+    yield
+
+
+train_data = {
+    "train_details": {"trainNumber": "221", "from_station": "3700", "to_station": "5150", "date": "2024-03-17", "hours": "07", "minutes": "00"},
+    "prices": {
+        "senior_citizen_price": {"type": "אזרח ותיק", "נסיעה אחת": 4.5, "חופשי יומי": 9, "חופשי חודשי": 127.5},
+        "blind_escort_price": {"type": "כללי", "נסיעה אחת": 9, "חופשי יומי": 18, "חופשי חודשי": 255},
+        "children_price": {"type": "נוער עד גיל 18", "נסיעה אחת": 9, "חופשי יומי": 18, "חופשי חודשי": 127.5},
+        "ordinary_price": {"type": "כללי", "נסיעה אחת": 9, "חופשי יומי": 18, "חופשי חודשי": 255},
+        "disabled_price": {"type": "נכה", "נסיעה אחת": 9, "חופשי יומי": 18, "חופשי חודשי": 255},
+        "discount_price": {"type": "זכאי ביטוח לאומי", "נסיעה אחת": 9, "חופשי יומי": 18, "חופשי חודשי": 255},
+        "student_price": {"type": "סטודנט רגיל", "נסיעה אחת": 9, "חופשי יומי": 18, "חופשי חודשי": 255},
+    }
+}
 
 @pytest.mark.regression
 @pytest.mark.parametrize(
@@ -20,7 +46,6 @@ def test_get_schedule_api(trainNumber, from_station, to_station, date, hours):
     response = RailAPIClient().get_schedule(from_station, to_station, date, hours)
 
     assert response is not None, "schedule not available"
-
     train_found = any(
         train.trainNumber == trainNumber
         for travel in response.result.travels
@@ -28,29 +53,22 @@ def test_get_schedule_api(trainNumber, from_station, to_station, date, hours):
     )
     assert train_found, f'Train number {trainNumber} on the {date} was not found in the schedule'
 
-@pytest.mark.regression
-@pytest.mark.parametrize(
-    "train_data", [
-        ({
-            "train_details": {"trainNumber": "221", "from_station": "3700", "to_station": "5150", "date": "2024-03-17", "hours": "07", "minutes": "00"},
-            "prices": {
-                "senior_citizen_price": {"type": "אזרח ותיק", "נסיעה אחת": 4.6, "חופשי יומי": 9, "חופשי חודשי": 127.5},
-                "blind_escort_price": {"type": "מלווה לקוי ראייה", "נסיעה אחת": 9, "חופשי יומי": 18, "חופשי חודשי": 255},
-                "children_price": {"type": "נוער עד גיל 18", "נסיעה אחת": 9, "חופשי יומי": 18, "חופשי חודשי": 127.5},
-                "ordinary_price": {"type": "כללי", "נסיעה אחת": 9, "חופשי יומי": 18, "חופשי חודשי": 255},
-                "disabled_price": {"type": "נכה", "נסיעה אחת": 9, "חופשי יומי": 18, "חופשי חודשי": 255},
-                "discount_price": {"type": "זכאי ביטוח לאומי", "נסיעה אחת": 9, "חופשי יומי": 18, "חופשי חודשי": 255},
-                "student_price": {"type": "סטודנט רגיל", "נסיעה אחת": 9, "חופשי יומי": 18, "חופשי חודשי": 255},
-                "old_citizen_price_price": {"type": "אזרח ותיק 75+", "trip": "חינם"},
-                "blind_price": {"type": "לקוי ראייה", "trip": "חינם"}
-            }
-        })
-    ]
-)
-def test_ticket_prices_UI(page: Page, train_data):
-    travel = TravelPage(page)
-    train_details = train_data["train_details"]
-    prices = train_data["prices"]
+@pytest.mark.usefixtures("setup_travel_page", "get_train_data")
+class TestPriceDetails:
+    travel_page: TravelPage
+    train_data: dict
+    def test_ticket_prices_UI(self):
+        train_details = self.train_data["train_details"]
+        prices = self.train_data["prices"]
 
-    travel.goto(train_details)
-    travel.get_price_window(train_details, prices["senior_citizen_price"])
+        self.travel_page.get_price_window(train_details, prices["senior_citizen_price"])
+        self.travel_page.get_price_window(train_details, prices["blind_escort_price"])
+        self.travel_page.get_price_window(train_details, prices["children_price"])
+        self.travel_page.get_price_window(train_details, prices["ordinary_price"])
+        self.travel_page.get_price_window(train_details, prices["disabled_price"])
+        self.travel_page.get_price_window(train_details, prices["discount_price"])
+        self.travel_page.get_price_window(train_details, prices["student_price"])
+
+
+
+
