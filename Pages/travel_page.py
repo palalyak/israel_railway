@@ -12,19 +12,17 @@ class TravelPage(BasePage):
         self.base_url = base_url
         self.page = page
 
-    def get_price_window(self, train_details, price_details):
+    def prices(self, train_details, price_details):
         train_selector = f"#trainNumber_{train_details["trainNumber"]}"
         price_type = price_details.get("type")
         price_window_locator = self.page.locator(f"{train_selector} .modal .desktop")
 
         '''open trip price modal window from train slot'''
         if not price_window_locator.is_visible():
-            # self.page.click(f"{train_selector} button")
             self.click_on(f"{train_selector} button")
         expect(self.page.locator(f"{train_selector} .modal .desktop"), "The window with prices should be visible").to_be_visible()
 
         '''open list of price categories'''
-        # self.page.locator(f"{train_selector} .modal .desktop svg").click()
         self.click_on(f"{train_selector} .modal .desktop svg")
 
         '''select the price categories'''
@@ -35,6 +33,13 @@ class TravelPage(BasePage):
 
         test_instance = TestPrices(self.page)
         test_instance.test_prices(price_details)
+
+    def train_slots(self, train_details, snapshot):
+        train_slot = f"#trainNumber_{train_details["trainNumber"]}"
+
+        snapshot.snapshot_dir = 'C:/Users/P0036467/PycharmProjects/railway/snapshots'
+        snapshot.assert_match(train_slot, 'foo_output.txt')
+
 
     def goto(self, train_details, schedule_type=1):
         from_station = train_details["from_station"]
