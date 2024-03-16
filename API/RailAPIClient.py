@@ -1,3 +1,6 @@
+import json
+import sqlite3
+
 import requests
 
 from Serialization.response import ApiResponse
@@ -19,7 +22,6 @@ class RailAPIClient:
         }
         endpoint = "searchTrainLuzForDateTime"
         full_url = self.base_url + endpoint
-        payload = {}
         headers = {
             'authority': 'israelrail.azurefd.net',
             'accept': 'application/json, text/plain, */*',
@@ -37,10 +39,12 @@ class RailAPIClient:
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
         }
 
-        print("Отправляемый URL:", full_url, "с параметрами:", params)
+        print("URL:", full_url, "with parameters:", params)
         response = requests.get(full_url, params=params, headers=headers)
+        print(response.json())
         response.raise_for_status()
         api_response = ApiResponse.parse_obj(response.json())
+        print(api_response.dict())
 
         return api_response
 
