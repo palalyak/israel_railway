@@ -81,6 +81,7 @@ class TestSlotDetails:
     window: TravelPage
     train_data: dict
     def test_my_element(self, snapshot):
+        """run pytest Tests\test_example.py::TestSlotDetails::test_my_element --snapshot-update"""
         train_details = self.train_data["train_details"]
         self.window.train_slots(train_details, snapshot)
 
