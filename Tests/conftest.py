@@ -35,7 +35,7 @@ def browser_type(
 def browser(
     browser_type: BrowserType
 ) -> Generator[Browser, None, None]:
-    browser = browser_type.launch(headless=False, slow_mo=1000)
+    browser = browser_type.launch(headless=True, slow_mo=1000)
     browser.new_context(
         permissions=['notifications'],
     )
