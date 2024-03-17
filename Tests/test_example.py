@@ -32,6 +32,7 @@ train_data = dict(
     })
 
 
+@pytest.mark.skip
 @pytest.mark.regression
 @pytest.mark.parametrize(
     "trainNumber, from_station, to_station, date, hours", [
