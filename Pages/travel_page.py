@@ -13,7 +13,7 @@ class TravelPage(BasePage):
         self.page = page
 
     def prices(self, train_details, price_details):
-        train_selector = f"#trainNumber_{train_details["trainNumber"]}"
+        train_selector = f"#trainNumber_{train_details['trainNumber']}"
         price_type = price_details.get("type")
         price_window_locator = self.page.locator(f"{train_selector} .modal .desktop")
 
