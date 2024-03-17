@@ -35,7 +35,7 @@ class TravelPage(BasePage):
         test_instance.test_prices(price_details)
 
     def train_slots(self, train_details, snapshot):
-        train_slot = f"#trainNumber_{train_details["trainNumber"]}"
+        train_slot = f"#trainNumber_{train_details['trainNumber']}"
 
         snapshot.snapshot_dir = 'C:/Users/P0036467/PycharmProjects/railway/snapshots'
         snapshot.assert_match(train_slot, 'foo_output.txt')
